@@ -1,0 +1,29 @@
+#!/bin/bash
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root"
+   exit 1
+fi
+echo "Welcome to my script, this will genorate a nginx config for vhosts"
+read -p "Enter your domian name : " domain
+read -p "Enter your reverse proxy ip and port, E.g http://127.0.0.1:5959 : " ipport
+
+echo "server {" >> /etc/nginx/sites-enabled/$domain.conf
+echo "  listen 80;" >> /etc/nginx/sites-enabled/$domain.conf
+echo "  server_name $domain;" >> /etc/nginx/sites-enabled/$domain.conf
+echo "  location / {" >> /etc/nginx/sites-enabled/$domain.conf
+echo "          proxy_pass $ipport;" >> /etc/nginx/sites-enabled/$domain.conf
+echo "  }"  >> /etc/nginx/sites-enabled/$domain.conf
+echo "}" >> /etc/nginx/sites-enabled/$domain.conf
+service nginx reload
+read -p "Would you like the setup ssl? " -n 1 -r
+echo    # (optional) move to a new line
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+  tput setaf 2;  echo "Done, you can visit your website at http://$domain"
+    tput sgr0;
+    exit
+fi
+certbot
+ tput setaf 2; echo "Done, you can visit your website at https://$domain"
+ tput sgr0;
+exit
